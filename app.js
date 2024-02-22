@@ -2,11 +2,12 @@ const express = require("express");
 const { open } = require("sqlite");
 const sqlite3 = require("sqlite3");
 const path = require("path");
+const cors = require("cors");
 
 const databasePath = path.join(__dirname, "cricketTeam.db");
 
 const app = express();
-
+app.use(cors());
 app.use(express.json());
 
 let database = null;
