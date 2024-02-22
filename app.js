@@ -112,7 +112,7 @@ const { open } = require("sqlite");
 const sqlite3 = require("sqlite3");
 const path = require("path");
 const format = require("date-fns/format");
-const axios = require("axios");
+// const axios = require("axios");
 const cors = require("cors");
 
 const app = express();
@@ -155,7 +155,7 @@ const createTable = async () => {
 
   await database.run(createQuery);
 };
-
+/*
 const getInitializedDatabase = async () => {
   const url = "https://s3.amazonaws.com/roxiler.com/product_transaction.json";
   const responseData = await axios.get(url);
@@ -183,7 +183,7 @@ app.get("/initialize-database", async (request, response) => {
   const initializedDatabase = await getInitializedDatabase();
   response.send(initializedDatabase);
 });
-
+*/
 /* -----------------------CRUD OPERATIONS------------------------------*/
 
 app.get("/get-product/:productId", async (request, response) => {
@@ -468,7 +468,7 @@ app.get("/combined-response", async (request, response) => {
     productId = 0,
   } = request.query;
   const combinedData = {
-    initialization: await getInitializedDatabase(),
+    // initialization: await getInitializedDatabase(),
     transactions: await getAllTransactions(
       searchText,
       selectedMonth,
