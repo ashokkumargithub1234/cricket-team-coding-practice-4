@@ -336,12 +336,12 @@ const getStatistics = async (selectedMonth) => {
     transactions
     WHERE dateOfSale LIKE '%-${monthValue}-%' and sold = 0;`;
   }
-  const saleResponseResult = await database.all(total_sale_amt);
+  const saleResponseResult = await database.all(totalSaleAmt);
   statistics.push(saleResponseResult);
 
-  const soldResponseResult = await database.all(total_sold_items);
+  const soldResponseResult = await database.all(totalSoldItems);
   statistics.push(soldResponseResult);
-  const unSoldResponseResult = await database.all(total_unsold_items);
+  const unSoldResponseResult = await database.all(totalUnsoldItems);
   statistics.push(unSoldResponseResult);
   return statistics.flat();
 };
