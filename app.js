@@ -84,8 +84,45 @@ app.get("/initialize-database", async (request, response) => {
 });
 
 /* -----------------------CRUD OPERATIONS------------------------------*/
+app.get("/get-product/:id", async (request, response) => {
+  const { id } = request.params;
+  const productData = await database.get(`
+        SELECT
+            *
+        FROM 
+            transactions 
+        WHERE 
+            id = ${id};
+    `);
+  response.send(productData);
+});
 
-const postNewProductData = async (
+const deleteProductData = async (productId) => {
+  // console.log(typeof productId);
+  const productData = await database.run(`
+    DELETE FROM
+      transactions
+    WHERE
+      id = ${productId};`);
+  if (productData.changes === 0) {
+    return {
+      msg: "Product Not Found",
+    };
+  } else {
+    return {
+      msg: `ID ${productId} Product Deleted Successfully`,
+    };
+  }
+};
+
+app.delete("/products/:productId/", async (request, response) => {
+  const { productId } = request.params;
+  const deleteProduct = await deleteProductData(productId);
+
+  response.send(deleteProduct);
+});
+
+const modifyProductData = async (
   id,
   title,
   price,
@@ -95,12 +132,42 @@ const postNewProductData = async (
   sold,
   dateOfSale
 ) => {
-  const newProductData = await database.run(`
+  const queryData = `SELECT id FROM transactions WHERE id = ${id}`;
+  const findData = await database.get(queryData);
+  console.log(findData);
+  if (findData === undefined) {
+    const newProductData = await database.run(`
    INSERT INTO transactions(id,title,price,description,category,image,sold,dateOfSale) 
-    VALUES (${id}, '${title}', '${price}', 
-    '${description}','${category}','${image}',${sold},'${dateOfSale}')
+    VALUES (
+       ${id},
+       '${title.replace(/'/g, "''")}',
+       ${price},
+       '${description.replace(/'/g, "''")}',
+       '${category.replace(/'/g, "''")}',
+       '${image.replace(/'/g, "''")}',
+       ${sold},
+       '${dateOfSale.replace(/'/g, "''")}'
+   )
     ;`);
-  return { msg: `id = ${id} NewProductAdded` };
+    return { msg: `id = ${id} New Product Added` };
+  } else if (findData !== undefined) {
+    const newProductData = await database.run(`
+   UPDATE 
+        transactions 
+   SET 
+   title = '${title.replace(/'/g, "''")}',
+   price = '${price}',
+   description = '${description.replace(/'/g, "''")}',
+   category = '${category.replace(/'/g, "''")}',
+   image = '${image.replace(/'/g, "''")}',
+   sold = ${sold},
+   dateOfSale = '${dateOfSale.replace(/'/g, "''")}'
+   
+     WHERE 
+    id = ${id}
+    ;`);
+    return { msg: `ProductID = ${id} ProductUpdatedSuccessfully` };
+  }
 };
 
 app.post("/add-product-data/", async (request, response) => {
@@ -114,7 +181,7 @@ app.post("/add-product-data/", async (request, response) => {
     sold,
     dateOfSale,
   } = request.body;
-  const addPostData = await postNewProductData(
+  const addPostData = await modifyProductData(
     id,
     title,
     price,
@@ -127,40 +194,9 @@ app.post("/add-product-data/", async (request, response) => {
   response.send(addPostData);
 });
 
-const updateProduct = async (
-  productId,
-  id,
-  title,
-  price,
-  description,
-  category,
-  image,
-  sold,
-  dateOfSale
-) => {
-  const newProductData = await database.run(`
-   UPDATE 
-        transactions 
-   SET 
-   id = ${id},
-   price = '${price}',
-   description = '${description}',
-   title = '${title}',
-   category = '${category}',
-   image = '${image}',
-   sold = ${sold},
-   dateOfSale = '${dateOfSale}'
-   
-     WHERE 
-    id = ${productId}
-    ;`);
-  return { msg: `ProductID = ${productId} ProductUpdatedSuccessfully` };
-};
-
-app.put("/update-product/:productId", async (request, response) => {
-  const { productId } = request.params;
+app.put("/update-product/:id", async (request, response) => {
+  const { id } = request.params;
   const {
-    id,
     title,
     price,
     description,
@@ -169,8 +205,7 @@ app.put("/update-product/:productId", async (request, response) => {
     sold,
     dateOfSale,
   } = request.body;
-  const updatedProduct = await updateProduct(
-    productId,
+  const updatedProduct = await modifyProductData(
     id,
     title,
     price,
@@ -183,38 +218,50 @@ app.put("/update-product/:productId", async (request, response) => {
   response.send(updatedProduct);
 });
 
-const deleteProductData = async (deleteProductId) => {
-  const productId = await database.run(`
-    DELETE FROM
-      transactions
-    WHERE
-      id = '${deleteProductId}';`);
-  if (productId.changes === 0) {
-    return {
-      msg: "Product Not Found",
-    };
-  } else {
-    return {
-      msg: `ID ${deleteProductId} Product Deleted Successfully`,
-    };
-  }
-};
-
-app.delete("/products/:productId/", async (request, response) => {
-  const { deleteProductId } = request.params;
-  const deleteProduct = await deleteProductData(deleteProductId);
-
-  response.send(deleteProduct);
-});
-
 /*---------------------------------------------------------------------*/
 
 const getAllTransactions = async (limit, offset, searchText, selectedMonth) => {
   // console.log(selectedMonth);
+  let getTodoQuery;
+  let totalSearchedItems;
+  if (selectedMonth === "" && searchText === "") {
+    getTodoQuery = `
+     SELECT
+      *
+    FROM
+      transactions
+    
+        LIMIT ${limit} OFFSET ${offset}
+      `;
+    totalSearchedItems = `
+      SELECT
+      count(id) as total
+    FROM
+      transactions
+   
+      `;
+  } else if (selectedMonth === "" && searchText !== "") {
+    getTodoQuery = `
+     SELECT
+      *
+    FROM
+      transactions
+    WHERE
+      (title LIKE '%${searchText}%' OR description LIKE '%${searchText}%' OR price LIKE '%${searchText}%')
+        LIMIT ${limit} OFFSET ${offset}
+      `;
+    totalSearchedItems = `
+      SELECT
+      count(id) as total
+    FROM
+      transactions
+    WHERE
+      (title LIKE '%${searchText}%' OR description LIKE '%${searchText}%' OR price LIKE '%${searchText}%')
+      `;
+  } else {
+    const monthValue = format(new Date(selectedMonth), "MM");
 
-  const monthValue = format(new Date(selectedMonth), "MM");
-
-  const getTodoQuery = `
+    getTodoQuery = `
      SELECT
       *
     FROM
@@ -224,7 +271,7 @@ const getAllTransactions = async (limit, offset, searchText, selectedMonth) => {
       AND dateOfSale LIKE '%-${monthValue}-%'      
         LIMIT ${limit} OFFSET ${offset}
       `;
-  const totalSearchedItems = `
+    totalSearchedItems = `
       SELECT
       count(id) as total
     FROM
@@ -233,6 +280,7 @@ const getAllTransactions = async (limit, offset, searchText, selectedMonth) => {
       (title LIKE '%${searchText}%' OR description LIKE '%${searchText}%' OR price LIKE '%${searchText}%')
       AND dateOfSale LIKE '%-${monthValue}-%' 
       `;
+  }
 
   const todoQuery = await database.all(getTodoQuery);
   const totalItems = await database.get(totalSearchedItems);
@@ -241,17 +289,40 @@ const getAllTransactions = async (limit, offset, searchText, selectedMonth) => {
 
 const getStatistics = async (selectedMonth) => {
   let statistics = [];
-  const monthValue = format(new Date(selectedMonth), "MM");
+  let total_sale_amt;
+  let total_sold_items;
+  let total_unsold_items;
 
-  const total_sale_amt = `
+  if (selectedMonth === "") {
+    total_sale_amt = `
+    SELECT 
+    SUM(price) AS total_sale_amt
+    FROM transactions 
+    WHERE sold = 1;`;
+
+    total_sold_items = `
+    SELECT COUNT()AS Total_sold_items
+        FROM 
+    transactions 
+        WHERE 
+    sold = 1;`;
+
+    total_unsold_items = `
+    SELECT 
+    COUNT()AS Total_unSold_items
+        FROM 
+    transactions
+    WHERE sold = 0;`;
+  } else {
+    const monthValue = format(new Date(selectedMonth), "MM");
+
+    total_sale_amt = `
     SELECT 
     SUM(price) AS total_sale_amt
     FROM transactions 
     WHERE dateOfSale LIKE '%-${monthValue}-%' and sold = 1;`;
-  const saleResponseResult = await database.all(total_sale_amt);
-  statistics.push(saleResponseResult);
 
-  const total_sold_items = `
+    total_sold_items = `
     SELECT COUNT()AS Total_sold_items
         FROM 
     transactions 
@@ -259,22 +330,25 @@ const getStatistics = async (selectedMonth) => {
     dateOfSale LIKE '%-${monthValue}-%' 
         and 
     sold = 1;`;
-  const soldResponseResult = await database.all(total_sold_items);
-  statistics.push(soldResponseResult);
 
-  const total_unsold_items = `
+    total_unsold_items = `
     SELECT 
     COUNT()AS Total_unSold_items
         FROM 
     transactions
     WHERE dateOfSale LIKE '%-${monthValue}-%' and sold = 0;`;
+  }
+  const saleResponseResult = await database.all(total_sale_amt);
+  statistics.push(saleResponseResult);
+
+  const soldResponseResult = await database.all(total_sold_items);
+  statistics.push(soldResponseResult);
   const unSoldResponseResult = await database.all(total_unsold_items);
   statistics.push(unSoldResponseResult);
   return statistics.flat();
 };
 
 const getBarChartData = async (selectedMonth) => {
-  const monthValue = format(new Date(selectedMonth), "MM");
   const barChartData = [];
 
   const priceRange = [
@@ -291,38 +365,67 @@ const getBarChartData = async (selectedMonth) => {
   ];
 
   for (let range of priceRange) {
-    const total = await database.get(`SELECT 
+    let total;
+    if (selectedMonth === "") {
+      total = await database.get(`SELECT 
+            COUNT() AS count
+        FROM 
+        transactions 
+            WHERE 
+        price BETWEEN ${range.min} AND ${range.max};`);
+
+      barChartData.push({
+        priceRange: `${range.min}-${range.max}`,
+        totalItems: total.count,
+      });
+    } else {
+      const monthValue = format(new Date(selectedMonth), "MM");
+
+      total = await database.get(`SELECT 
             COUNT() AS count
         FROM 
         transactions 
             WHERE 
         dateOfSale LIKE '%-${monthValue}-%' and price BETWEEN ${range.min} AND ${range.max};`);
 
-    barChartData.push({
-      priceRange: `${range.min}-${range.max}`,
-      totalItems: total.count,
-    });
+      barChartData.push({
+        priceRange: `${range.min}-${range.max}`,
+        totalItems: total.count,
+      });
+    }
   }
 
   return barChartData;
 };
 
 const getPieChartData = async (selectedMonth) => {
-  const monthValue = format(new Date(selectedMonth), "MM");
-  const pieChartData = await database.all(`
+  let pieChartData;
+  if (selectedMonth === "") {
+    pieChartData = await database.all(`
+    SELECT 
+    category,count(id) as items 
+    FROM transactions 
+    GROUP BY category;
+  `);
+  } else {
+    const monthValue = format(new Date(selectedMonth), "MM");
+
+    pieChartData = await database.all(`
     SELECT 
     category,count(id) as items 
     FROM transactions 
     WHERE dateOfSale LIKE '%-${monthValue}-%' 
     GROUP BY category;
   `);
+  }
+
   return pieChartData;
 };
 
 app.get("/transactions", async (request, response) => {
   const {
     searchText = "",
-    selectedMonth = "01",
+    selectedMonth = "",
     limit = 10,
     offset = 0,
   } = request.query;
@@ -336,19 +439,19 @@ app.get("/transactions", async (request, response) => {
 });
 
 app.get("/statistics", async (request, response) => {
-  const { selectedMonth } = request.query;
+  const { selectedMonth = "" } = request.query;
   const statistics = await getStatistics(selectedMonth);
   response.send(statistics);
 });
 
 app.get("/bar-chart", async (request, response) => {
-  const { selectedMonth } = request.query;
+  const { selectedMonth = "" } = request.query;
   const barChartData = await getBarChartData(selectedMonth);
   response.send(barChartData);
 });
 
 app.get("/pie-chart", async (request, response) => {
-  const { selectedMonth } = request.query;
+  const { selectedMonth = "" } = request.query;
   const pieChartData = await getPieChartData(selectedMonth);
   response.send(pieChartData);
 });
@@ -356,7 +459,7 @@ app.get("/pie-chart", async (request, response) => {
 app.get("/combined-data", async (request, response) => {
   const {
     searchText = "",
-    selectedMonth = "01",
+    selectedMonth = "",
     limit = 10,
     offset = 0,
     deleteProductId = "",
