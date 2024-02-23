@@ -97,27 +97,25 @@ app.get("/get-product/:id", async (request, response) => {
   response.send(productData);
 });
 
-const deleteProductData = async (productId) => {
+const deleteProductData = async (deleteId) => {
   // console.log(typeof productId);
+  if (deleteId === "") {
+    return "Product Not Found";
+  }
   const productData = await database.run(`
     DELETE FROM
       transactions
     WHERE
-      id = ${productId};`);
-  if (productData.changes === 0) {
-    return {
-      msg: "Product Not Found",
-    };
-  } else {
-    return {
-      msg: `ID ${productId} Product Deleted Successfully`,
-    };
-  }
+      id = ${deleteId};`);
+
+  return {
+    msg: `ID ${deleteId} Product Deleted Successfully`,
+  };
 };
 
-app.delete("/products/:productId/", async (request, response) => {
-  const { productId } = request.params;
-  const deleteProduct = await deleteProductData(productId);
+app.delete("/products/:deleteId/", async (request, response) => {
+  const { deleteId } = request.params;
+  const deleteProduct = await deleteProductData(deleteId);
 
   response.send(deleteProduct);
 });
@@ -134,7 +132,7 @@ const modifyProductData = async (
 ) => {
   const queryData = `SELECT id FROM transactions WHERE id = ${id}`;
   const findData = await database.get(queryData);
-  console.log(findData);
+  // console.log(findData);
   if (findData === undefined) {
     const newProductData = await database.run(`
    INSERT INTO transactions(id,title,price,description,category,image,sold,dateOfSale) 
@@ -462,7 +460,7 @@ app.get("/combined-data", async (request, response) => {
     selectedMonth = "",
     limit = 10,
     offset = 0,
-    deleteProductId = "",
+    deleteId = "",
   } = request.query;
   const combinedData = {
     transactions: await getAllTransactions(
@@ -474,7 +472,7 @@ app.get("/combined-data", async (request, response) => {
     statistics: await getStatistics(selectedMonth),
     barChartData: await getBarChartData(selectedMonth),
     pieChartData: await getPieChartData(selectedMonth),
-    deleteProductData: await deleteProductData(deleteProductId),
+    deleteInformation: await deleteProductData(deleteId),
   };
   response.send(combinedData);
 });

@@ -79,7 +79,7 @@ GET http://localhost:3000/bar-chart?
 GET http://localhost:3000/pie-chart?
 ###
 
-GET http://localhost:3000/combined-data?
+GET http://localhost:3000/combined-data?deleteId=61
 ###
 
 
