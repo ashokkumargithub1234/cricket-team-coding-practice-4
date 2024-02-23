@@ -287,25 +287,25 @@ const getAllTransactions = async (limit, offset, searchText, selectedMonth) => {
 
 const getStatistics = async (selectedMonth) => {
   let statistics = [];
-  let total_sale_amt;
-  let total_sold_items;
-  let total_unsold_items;
+  let totalSaleAmt;
+  let totalSoldItems;
+  let totalUnsoldItems;
 
   if (selectedMonth === "") {
-    total_sale_amt = `
+    totalSaleAmt = `
     SELECT 
     SUM(price) AS total_sale_amt
     FROM transactions 
     WHERE sold = 1;`;
 
-    total_sold_items = `
+    totalSoldItems = `
     SELECT COUNT()AS Total_sold_items
         FROM 
     transactions 
         WHERE 
     sold = 1;`;
 
-    total_unsold_items = `
+    totalUnsoldItems = `
     SELECT 
     COUNT()AS Total_unSold_items
         FROM 
