@@ -314,13 +314,13 @@ const getStatistics = async (selectedMonth) => {
   } else {
     const monthValue = format(new Date(selectedMonth), "MM");
 
-    total_sale_amt = `
+    totalSaleAmt = `
     SELECT 
     SUM(price) AS total_sale_amt
     FROM transactions 
     WHERE dateOfSale LIKE '%-${monthValue}-%' and sold = 1;`;
 
-    total_sold_items = `
+    totalSoldItems = `
     SELECT COUNT()AS Total_sold_items
         FROM 
     transactions 
@@ -329,7 +329,7 @@ const getStatistics = async (selectedMonth) => {
         and 
     sold = 1;`;
 
-    total_unsold_items = `
+    totalUnsoldItems = `
     SELECT 
     COUNT()AS Total_unSold_items
         FROM 
