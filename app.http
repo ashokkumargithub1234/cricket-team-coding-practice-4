@@ -1,37 +1,7 @@
-
-GET http://localhost:3000/players/
-
+Get http://localhost:3000/
 ###
 
-POST http://localhost:3000/players/
-Content-Type: application/json
-
-{
-  "playerName": "Vishal",
-  "jerseyNumber": 17,
-  "role": "Bowler"
-}
-###
-GET http://localhost:3000/players/1/
-###
-PUT  http://localhost:3000/players/2/
-Content-Type: application/json
-
-{
-  "playerName": "Maneesh",
-  "jerseyNumber": 54,
-  "role": "All-rounder"
-}
-
-###
-DELETE  http://localhost:3000/players/10/
-
-
-
-
-###################################################################
-
-Get http://localhost:3000/get-product/61
+Get http://localhost:3000/get-product/60
 ###
 
 DELETE  http://localhost:3000/products/61/
@@ -81,7 +51,3 @@ GET http://localhost:3000/pie-chart?
 
 GET http://localhost:3000/combined-data?
 ###
-
-
-
-
