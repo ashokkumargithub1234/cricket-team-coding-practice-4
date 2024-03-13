@@ -51,6 +51,10 @@ app.get("/players/", async (request, response) => {
   );
 });
 
+app.get("/", async (request, response) =>{
+  response.send("Players Data Loaded")
+});
+
 app.get("/players/:playerId/", async (request, response) => {
   const { playerId } = request.params;
   const getPlayerQuery = `
