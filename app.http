@@ -1,53 +1,27 @@
-Get http://localhost:3000/
+GET http://localhost:3000/players/
+
 ###
 
-Get http://localhost:3000/get-product/60
-###
-
-DELETE  http://localhost:3000/products/61/
-###
-
-POST http://localhost:3000/add-product-data/
+POST http://localhost:3000/players/
 Content-Type: application/json
 
-{       
-       "id": 61,
-        "title": "DANVOUY Womens T Shirt Casual Cotton Short",
-        "price": 412.99,
-        "description": "95Cotton5Spandex Features Casual Short Sleeve Letter PrintVNeckFashion Tees The fabric is soft and has some stretch. Occasion CasualOfficeBeachSchoolHomeStreet. Season SpringSummerAutumnWinter.",
-        "category": "women's clothing",
-        "image": "https://fakestoreapi.com/img/61pHAEJ4NML._AC_UX679_.jpg",
-        "sold": true,
-        "dateOfSale": "2021-09-27T20:29:54+05:30"
+{
+  "playerName": "Vishal",
+  "jerseyNumber": 17,
+  "role": "Bowler"
 }
 ###
-
-PUT http://localhost:3000/update-product/65
+GET http://localhost:3000/players/1/
+###
+PUT  http://localhost:3000/players/2/
 Content-Type: application/json
 
-{             
-        "title": "DANVOUY Ashok Womens T Shirt Casual Cotton Short",
-        "price": 412.99,
-        "description": "95Cotton5Spandex Features Casual Short Sleeve Letter PrintVNeckFashion Tees The fabric is soft and has some stretch. Occasion CasualOfficeBeachSchoolHomeStreet. Season SpringSummerAutumnWinter.",
-        "category": "women's clothings",
-        "image": "https://fakestoreapi.com/img/61pHAEJ4NML._AC_UX679_.jpg",
-        "sold": true,
-        "dateOfSale": "2021-09-27T20:29:54+05:30"
+{
+  "playerName": "Maneesh",
+  "jerseyNumber": 54,
+  "role": "All-rounder"
 }
 
 ###
-
-GET http://localhost:3000/transactions?
-###
-
-GET http://localhost:3000/statistics?
-###
-
-GET http://localhost:3000/bar-chart?
-###
-
-GET http://localhost:3000/pie-chart?
-###
-
-GET http://localhost:3000/combined-data?
+DELETE  http://localhost:3000/players/10/
 ###
